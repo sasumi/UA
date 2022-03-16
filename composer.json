@@ -1,0 +1,19 @@
+{
+	"name": "lfphp/ua",
+	"description": "browser user agent resolver",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "sasumi",
+			"email": "cnsasumi@gmail.com"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"LFPhp\\UA\\": "./src/"
+		}
+	},
+	"require": {
+		"ext-json": "*"
+	}
+}
