@@ -15,6 +15,7 @@ class Device implements ResolverInterface {
 	const DEVICE_TV = 'DEV_TV';
 	const DEVICE_WATCH = 'DEV_WATCH';
 	const DEVICE_EXT = 'DEV_EXT';
+
 	const DEVICE_MAP = [
 		self::DEVICE_PC     => 'PC',
 		self::DEVICE_MOBILE => 'Mobile',
@@ -24,14 +25,29 @@ class Device implements ResolverInterface {
 		self::DEVICE_EXT    => 'Ext',
 	];
 
-	public static function resolve($ua){
+	public static function resolve($ua, &$model = ''){
 		if(OS::resolve($ua) === OS::OS_ANDROID && UAHelper::matched('GoogleTV', $ua)){
 			return self::DEVICE_TV;
 		}
-		if(UAHelper::matched(['WoPhone', 'BlackBerry', 'MIDP'], $ua)){
+
+		if(UAHelper::matched([
+			'WoPhone',
+			'BlackBerry',
+			'MIDP',
+			'IEMobile',
+			'Windows CE',
+			'Windows Phone',
+			'WP7',
+			'Opera Mobi',
+			'Opera Mini;',
+			'UCWEB',
+			'/^Mozilla\/5.0 \((?:Nokia|NOKIA)(?:\s?)([^\)]+)\)UC AppleWebkit\(like Gecko\) Safari\/530$/',
+			'/\((?:LG[-|\/])(.*) (?:Browser\/)?AppleWebkit/'
+		], $ua)){
 			return self::DEVICE_MOBILE;
 		}
-		if(UAHelper::matched(['RIM Tablet OS', 'PlayBook', 'Grid OS'], $ua)){
+
+		if(UAHelper::matched(['RIM Tablet OS', 'PlayBook', 'Grid OS', 'Opera Tablet'], $ua)){
 			return self::DEVICE_TABLET;
 		}
 
@@ -41,6 +57,7 @@ class Device implements ResolverInterface {
 			}
 			return self::DEVICE_MOBILE;
 		}
+
 		if(UAHelper::matched([
 			'/Series[ ]?60/',
 			'Symbian',
@@ -71,6 +88,8 @@ class Device implements ResolverInterface {
 			'LGSmartTV',
 			'mbxtWebKit',
 			'InettvBrowser',
+			'Opera TV',
+			'Opera-TV'
 		], $ua)){
 			return self::DEVICE_TV;
 		}

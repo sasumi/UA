@@ -25,7 +25,7 @@ class OS implements ResolverInterface {
 		self::OS_UNKNOWN => 'Unknown',
 	];
 
-	public static function resolve($ua){
+	public static function resolve($ua, &$version = ''){
 		if(UAHelper::matched([
 			'Linux',
 			'Unix',
@@ -40,19 +40,36 @@ class OS implements ResolverInterface {
 			"'iPhone( Simulator)?;'",
 			'iPad;',
 			'iPod;',
+			'Safari',
 			'/iPhone\s*\d*s?[cp]?;/i',
 		], $ua)){
 			return self::OS_IOS;
 		}
+
+		if($version = UAHelper::matched('/^IUC \(U;\s?iOS ([0-9\.]+);/', $ua)){
+			return self::OS_IOS;
+		}
+
 		if(UAHelper::matched('Mac OS X', $ua)){
 			return self::OS_MAC_OS;
 		}
 		if(UAHelper::matched('Windows', $ua)){
 			return self::OS_WINDOWS;
 		}
-		if(UAHelper::matched(['Android', 'nook browser'], $ua)){
+		if(UAHelper::matched([
+			'Android',
+			'nook browser',
+		], $ua)){
 			return self::OS_ANDROID;
 		}
+		if(UAHelper::matched('/(M?QQBrowser)\/([0-9.]*)/', $ua) && preg_match('/(M?QQBrowser)\/([0-9.]*)/', $ua, $ms)){
+			return self::OS_WINDOWS;
+		}
+
+		if($version = UAHelper::matched('/^JUC \(Linux; U; ([0-9\.]+)[^;]*; [^;]+; ([^;]*[^\s])\s*; [0-9]+\*[0-9]+\)/', $ua)){
+			return self::OS_ANDROID;
+		}
+
 		if(UAHelper::matched('BlackBerry', $ua)){
 			return self::OS_UNKNOWN;
 		}

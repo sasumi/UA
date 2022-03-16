@@ -3,5 +3,5 @@
 namespace LFPhp\UA;
 
 interface ResolverInterface {
-	public static function resolve($ua);
+	public static function resolve($ua, &$extend_info = '');
 }

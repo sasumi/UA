@@ -28,22 +28,19 @@ class ComposerStaticInit71dfa2a9b197cd907478bcfffb86da50
     public static $prefixLengthsPsr4 = array (
         'L' => 
         array (
+            'LFPhp\\UA\\' => 9,
             'LFPhp\\Logger\\' => 13,
-        ),
-        'C' => 
-        array (
-            'Cnsas\\UaAnalysis\\' => 17,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'LFPhp\\UA\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+        ),
         'LFPhp\\Logger\\' => 
         array (
             0 => __DIR__ . '/..' . '/lfphp/logger/src',
-        ),
-        'Cnsas\\UaAnalysis\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 
