@@ -15,6 +15,8 @@ use LFPhp\UA\Resolver\Browser;
 use LFPhp\UA\Resolver\Device;
 
 $ua = $_SERVER['HTTP_USER_AGENT'];
-echo Device::resolve($ua);
-echo Browser::resolve($ua);
+list($device, $vendor, $version, $type) = Device::resolve($ua);
+var_dump($device, $vendor, $version, $type);
+list($browser, $version) = Browser::resolve($ua);
+var_dump($browser, $version);
 ```
