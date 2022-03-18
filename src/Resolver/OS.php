@@ -4,79 +4,80 @@ namespace LFPhp\UA\Resolver;
 
 use LFPhp\UA\ResolverInterface;
 use LFPhp\UA\UAHelper;
+use function LFPhp\Func\dump;
 
 /**
  * 操作系统
  */
 class OS implements ResolverInterface {
-	const OS_UNIX = 'OS_UNIX';
-	const OS_WINDOWS = 'OS_WINDOWS';
-	const OS_ANDROID = 'OS_ANDROID';
-	const OS_IOS = 'OS_IOS';
-	const OS_MAC_OS = 'OS_MAC_OS';
-	const OS_UNKNOWN = 'OS_UNKNOWN';
-
-	const OS_MAP = [
-		self::OS_UNIX    => 'OS_*NIX',
-		self::OS_WINDOWS => 'Windows',
-		self::OS_ANDROID => 'Android',
-		self::OS_IOS     => 'iOS',
-		self::OS_MAC_OS  => 'MacOS',
-		self::OS_UNKNOWN => 'Unknown',
+	private static $windows_version_map = [
+		'ME'      => '4.90',
+		'NT 3.11' => 'NT3.51',
+		'NT 4.0'  => 'NT4.0',
+		'2000'    => 'NT 5.0',
+		'XP'      => ['NT 5.1', 'NT 5.2'],
+		'Vista'   => 'NT 6.0',
+		'7'       => 'NT 6.1',
+		'8'       => 'NT 6.2',
+		'8.1'     => 'NT 6.3',
+		'10'      => ['NT 6.4', 'NT 10.0'],
+		'RT'      => 'ARM',
 	];
 
-	public static function resolve($ua, &$version = ''){
-		if(UAHelper::matched([
-			'Linux',
-			'Unix',
-			'FreeBSD',
-			'OpenBSD',
-			'NetBSD',
-			'SunOS',
-		], $ua)){
-			return self::OS_UNIX;
-		}
-		if(UAHelper::matched([
-			"'iPhone( Simulator)?;'",
-			'iPad;',
-			'iPod;',
-			'Safari',
-			'/iPhone\s*\d*s?[cp]?;/i',
-		], $ua)){
-			return self::OS_IOS;
-		}
+	private static $rules = [
+		['/microsoft\s(windows)\s(vista|xp)/i', '$1', '$2'],
+		[[
+			'/(windows)\snt\s6\.2;\s(arm)/i',//Windows RT
+			'/(windows\sphone(?:\sos)*)[\s\/]?([\d\.\s]+\w)*/i',//Windows Phone
+			'/(windows\smobile|windows)[\s\/]?([ntce\d\.\s]+\w)/i',
+		], 'Windows', '$2'], //todo
 
-		if($version = UAHelper::matched('/^IUC \(U;\s?iOS ([0-9\.]+);/', $ua)){
-			return self::OS_IOS;
-		}
+		[' /(win(?=3|9|n)|win\s9x\s)([nt\d\.]+)/i', 'Windows', '$2'],//todo
 
-		if(UAHelper::matched('Mac OS X', $ua)){
-			return self::OS_MAC_OS;
-		}
-		if(UAHelper::matched('Windows', $ua)){
-			return self::OS_WINDOWS;
-		}
-		if(UAHelper::matched([
-			'Android',
-			'nook browser',
-		], $ua)){
-			return self::OS_ANDROID;
-		}
-		if(UAHelper::matched('/(M?QQBrowser)\/([0-9.]*)/', $ua) && preg_match('/(M?QQBrowser)\/([0-9.]*)/', $ua, $ms)){
-			return self::OS_WINDOWS;
-		}
+		['/\((bb)(10);/i ','BlackBerry','$2'],//BlackBerry 10
 
-		if($version = UAHelper::matched('/^JUC \(Linux; U; ([0-9\.]+)[^;]*; [^;]+; ([^;]*[^\s])\s*; [0-9]+\*[0-9]+\)/', $ua)){
-			return self::OS_ANDROID;
-		}
+		[[
+			'/(blackberry)\w*\/?([\w\.]+)*/i',
+			'/(tizen)[\/\s]([\w\.]+)/i',
+			'/(android|webos|palm\sos|qnx|bada|rim\stablet\sos|meego|contiki)[\/\s-]?([\w\.]+)*/i',
+			'/linux;.+(sailfish);/i',
+		], '$1', '$2'],
 
-		if(UAHelper::matched('BlackBerry', $ua)){
-			return self::OS_UNKNOWN;
-		}
-		if(UAHelper::matched(['/Series[ ]?60/', 'Symbian', 'S60'], $ua)){
-			return self::OS_UNKNOWN; //塞班
-		}
+		['/(symbian\s?os|symbos|s60(?=;))[\/\s-]?([\w\.]+)*/i', 'Symbian', '$2'],
+		['/\((series40);/i', 'Symbian', 's40'],
+		['/mozilla.+\(mobile;.+gecko.+firefox/i', 'FirefoxOS', '$2'],
+		[[
+			'/(nintendo|playstation)\s([wids34portablevu]+)/i',
+			'/(mint)[\/\s\(]?(\w+)*/i',
+			'/(mageia|vectorlinux)[;\s]/i',
+			'/(joli|[kxln]?ubuntu|debian|[open]*suse|gentoo|(?=\s)arch|slackware|fedora|mandriva|centos|pclinuxos|redhat|zenwalk|linpus)[\/\s-]?(?!chrom)([\w\.-]+)*/i',
+			'/(hurd|linux)\s?([\w\.]+)*/i',
+			'/(gnu)\s?([\w\.]+)*/i',
+			'/\s([frentopc-]{0,4}bsd|dragonfly)\s?([\w\.]+)*/i',
+			'/(haiku)\s(\w+)/i',
+		], '$1', '$2'],
 
-		return self::OS_UNKNOWN;
+		['/(cros)\s[\w]+\s([\w\.]+\w)/i','Chromium OS', '$2'],
+		['/(sunos)\s?([\w\.]+\d)*/i', 'Solaris', '$2'],
+
+		['/(ip[honead]+)(?:.*os\s([\w]+)*\slike\smac|;\sopera)/i', 'iOS', '$2'], //todo
+
+		[[
+			'(mac\sos\sx)\s?([\w\s\.]+\w)*/i',
+			'(macintosh|mac(?=_powerpc)\s)/i',
+		], 'MacOS', '$2'],
+
+		[[
+			'/((?:open)?solaris)[\/\s-]?([\w\.]+)*/i,',
+			'/(aix)\s((\d)(?=\.|\)|\s)[\w\.]*)*/i,',
+			'/(plan\s9|minix|beos|os\/2|amigaos|morphos|risc\sos|openvms)/i,',
+			'/(unix)\s?([\w\.]+)*/i'
+		], '$1', '$2']
+	];
+
+	public static function resolve($ua){
+		list($os, $ver) = UAHelper::matches(self::$rules, $ua);
+		dump($os, $ver);
+		return [$os, UAHelper::versionMap($ver, self::$windows_version_map)];
 	}
 }

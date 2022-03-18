@@ -9,84 +9,116 @@ use LFPhp\UA\UAHelper;
  * 浏览器
  */
 class Browser implements ResolverInterface {
-	const BROWSER_CHROME = 'BROWSER_CHROME';
-	const BROWSER_CHROMIUM = 'BROWSER_CHROMIUM';
-	const BROWSER_EDGE = 'BROWSER_EDGE';
-	const BROWSER_IE = 'BROWSER_IE';
-	const BROWSER_SAFARI = 'BROWSER_SAFARI';
-	const BROWSER_FIREFOX = 'BROWSER_FIREFOX';
-	const BROWSER_UC = 'BROWSER_UC';
-	const BROWSER_OPERA = 'BROWSER_OPERA';
-	const BROWSER_360_EXTREME = 'BROWSER_360_EXTREME';
-	const BROWSER_UNKNOWN = 'BROWSER_UNKNOWN';
-	const BROWSER_XE_APP = 'BROWSER_XE_APP';
-	const BROWSER_WX_BUILD_IN = 'BROWSER_WX_BUILD_IN';
-	const BROWSER_DY_BUILD_IN = 'BROWSER_DY_BUILD_IN';
-	const BROWSER_WEIBO_BUILD_IN = 'BROWSER_WB_BUILD_IN';
+	private static $rules = [
+		[[
+			'/(opera\smini)\/([\w\.-]+)/i', //Opera Mini
+			'/(opera\s[mobiletab]+).+version\/([\w\.-]+)/i', //Opera Mobile/Tablet
+			'/(opera).+version\/([\w\.]+)/i', //Opera > 9.80
+			'/(opera)[\/\s]+([\w\.]+)/i', //Opera < 9.80
+		], '$1', '$2'],
 
-	public static function resolve($ua, &$version = ''){
-		if(UAHelper::matched('Safari', $ua)){
-			$version = UAHelper::matched("/Version\/([0-9\.]+)/", $ua);
-			$version = $version ?: UAHelper::matched("/AppleWebKit\/[0-9\.]+\+/", $ua);
-			return self::BROWSER_SAFARI;
-		}
+		//Opera mini on iphone >= 8.0
+		['/(opios)[\/\s]+([\w\.]+)/i', 'Opera Mini', '$2'],
 
-		if(UAHelper::matched('MSIE', $ua)){
-			$version = UAHelper::matched('/MSIE ([0-9.]*)/', $ua);
-			return self::BROWSER_IE;
-		}
+		//Opera Webkit
+		['/\s(opr)\/([\w\.]+)/i', 'Opera', '$2'],
 
-		if(UAHelper::matched('(/Opera/i', $ua)){
-			$version = UAHelper::matched('/Opera[\/| ]([0-9.]*)/', $ua);
-			$version = $version ?: UAHelper::matched('/Version\/([0-9.]*)/', $ua);
-			return self::BROWSER_OPERA;
-		}
+		//Kindle
+		['/(Kindle)\/([\w\.]+)/i', '$1', '$2'],
 
-		if(UAHelper::matched(['Firefox', 'Namoroka', 'Shiretoko', 'Minefield'], $ua)){
-			$version = UAHelper::matched('/Firefox\/([0-9ab.]*)/', $ua);
-			$version = $version ?: UAHelper::matched('/Namoroka\/([0-9ab.]*)/', $ua);
-			$version = $version ?: UAHelper::matched('/Shiretoko\/([0-9ab.]*)/', $ua);
-			$version = $version ?: UAHelper::matched('/Minefield\/([0-9ab.]*)/', $ua);
-			return self::BROWSER_FIREFOX;
-		}
+		//Lunascape/Maxthon/Netfront/Jasmine/Blazer
+		['/(lunascape|maxthon|netfront|jasmine|blazer)[\/\s]?([\w\.]+)*/i', '$1', '$2'],
 
-		if($version = UAHelper::matched('/(?:Chrome|CrMo|CriOS)\/([0-9.]*)/', $ua)){
-			return self::BROWSER_CHROME;
-		}
+		//Avant/IEMobile/SlimBrowser/Baidu
+		['/(avant\s|iemobile|slim|baidu)(?:browser)?[\/\s]?([\w\.]*)/i', '$1', '$2'],
 
-		if(UAHelper::matched('chromeframe', $ua)){
-			//chrome frame
-			$version = UAHelper::matched('/chromeframe\/([0-9.]*)/', $ua);
-			return self::BROWSER_CHROME;
-		}
+		//Internet Explorer
+		['/(?:ms|\()(ie)\s([\w\.]+)/i', 'IE', '$2'],
 
-		if(UAHelper::matched('Chromium', $ua)){
-			$version = UAHelper::matched('/Chromium\/([0-9.]*)/', $ua);
-			return self::BROWSER_CHROMIUM;
-		}
+		//Rekonq
+		['/(Rekonq)\/([\w\.]+)*/i', '$1', '$2'],
 
-		if(UAHelper::matched(['UCWEB', '/\) UC /'], $ua)){
-			$version = UAHelper::matched('/UCWEB([0-9]*[.][0-9]*)/', $ua);
-			return self::BROWSER_UC;
-		}
-		if($version = UAHelper::matched('/UCBrowser\/([0-9.]*)/', $ua)){
-			return self::BROWSER_UC;
-		}
-		if(UAHelper::matched('/(M?QQBrowser)\/([0-9.]*)/', $ua)){
-			preg_match('/(M?QQBrowser)\/([0-9.]*)/', $ua, $ms);
-			$version = $ms[2];
-			if(preg_match('/^[0-9][0-9]$/', $ms[2])){
-				$version = $ms[0].'.'.$ms[1];
-			}
-		}
-		if(UAHelper::matched('360EE', $ua)){
-			return self::BROWSER_360_EXTREME;
-		}
+		//Chromium/Flock/RockMelt/Midori/Epiphany/Silk/Skyfire/Bolt/Iron/Iridium/PhantomJS
+		['/(chromium|flock|rockmelt|midori|epiphany|silk|skyfire|ovibrowser|bolt|iron|vivaldi|iridium|phantomjs)\/([\w\.-]+)/i', '$1', '$2'],
 
-		if($version = UAHelper::matched('/Trident\/([0-9.]*)/', $ua)){
-			return self::BROWSER_IE;
-		}
+		//IE11
+		['/(trident).+rv[:\s]([\w\.]+).+like\sgecko/i', 'IE', '11'],
 
-		return self::BROWSER_UNKNOWN;
+		//Edge
+		['/(Edge)\/((\d+)?[\w\.]+)/i', '$1', '$2'],
+
+		//Yandex
+		['/(yabrowser)\/([\w\.]+)/i', 'Yandex', '$2'],
+
+		//Comodo Dragon
+		['/(comodo_dragon)\/([\w\.]+)/i', 'Comodo Dragon', '$2'],
+
+		//WeChat
+		['/(micromessenger)\/([\w\.]+)/i', 'WeChat', '$2'],
+
+		//MIUI Browser
+		['/xiaomi\/miuibrowser\/([\w\.]+)/i', 'MIUI Browser', '$1'],
+
+		//Chrome WebView
+		['/\swv\).+(chrome)\/([\w\.]+)/i', 'Chrome WebView', '$2'],
+
+		//Android Browser
+		[[
+			'/android.+samsungbrowser\/([\w\.]+)/i',
+			'/android.+version\/([\w\.]+)\s+(?:mobile\s?safari|safari)*/i'
+		], 'Android Browser', '$1'],
+
+		[[
+			'/(chrome|omniweb|arora|[tizenoka]{5}\s?browser)\/v?([\w\.]+)/i', //Chrome/OmniWeb/Arora/Tizen/Nokia
+			'/(qqbrowser)[\/\s]?([\w\.]+)/i', //QQBrowser
+		], '$1', '$2'],
+
+		[[
+			'/(uc\s?browser)[\/\s]?([\w\.]+)/i',
+			'/ucweb.+(ucbrowser)[\/\s]?([\w\.]+)/i',
+			'/juc.+(ucweb)[\/\s]?([\w\.]+)/i',
+		], 'UCBrowser', '$2'],
+
+		['/(dolfin)\/([\w\.]+)/i', 'Dolphin', '$2'], //Dolphin
+
+		['/((?:android.+)crmo|crios)\/([\w\.]+)/i', 'Chrome', '$2'], //Chrome for Android/iOS
+
+		['/;fbav\/([\w\.]+);/i', 'Facebook','$1'], //Facebook App for iOS
+
+		['/fxios\/([\w\.-]+)/i', 'Firefox', '$1'], //Firefox for iOS
+
+		['/version\/([\w\.]+).+?mobile\/\w+\s(safari)/i', 'Mobile Safari', '$1'], //Mobile Safari
+
+		['/version\/([\w\.]+).+?(mobile\s?safari|safari)/i', '$2', '$1'],  //Safari & Safari Mobile
+
+		['/webkit.+?(mobile\s?safari|safari)(\/[\w\.]+)/i', '$1', '$2' ], //Safari < 3.0 //todo version convention
+
+		[[
+			'/(konqueror)\/([\w\.]+)/i',
+			'/(webkit|khtml)\/([\w\.]+)/i',
+		], 'Konqueror', '$2'],
+
+		//Gecko based
+		['/(navigator|netscape)\/([\w\.-]+)/i', 'Netscape', '$2'],
+
+		[[
+			'/(Swiftfox)/i', //Swiftfox
+			'/(Icedragon|Iceweasel|Camino|Chimera|Fennec|Maemo\sbrowser|Minimo|Conkeror)[\/\s]?([\w\.\+]+)/i', //IceDragon/Iceweasel/Camino/Chimera/Fennec/Maemo/Minimo/Conkeror
+			'/(Firefox|SeaMonkey|K-Meleon|Icecat|Iceape|Firebird|Phoenix)\/([\w\.-]+)/i', //Firefox/SeaMonkey/K-Meleon/IceCat/IceApe/Firebird/Phoenix
+			'/(Mozilla)\/([\w\.]+).+rv\:.+gecko\/\d+/i', //Mozilla
+			'/(Polaris|Lynx|Dillo|Icab|Doris|Amaya|w3m|Netsurf|Sleipnir)[\/\s]?([\w\.]+)/i', //Polaris/Lynx/Dillo/iCab/Doris/Amaya/w3m/NetSurf/Sleipnir
+			'/(Links)\s\(([\w\.]+)/i',//Links
+			'/(GoBrowser)\/?([\w\.]+)*/i',//GoBrowser
+			'/(ICE\s?Browser)\/v?([\w\._]+)/i',//ICE Browser
+			'/(Mosaic)[\/\s]([\w\.]+)/i', //Mosaic
+		], '$1', '$2'],
+	];
+
+	/**
+	 * @param string $ua
+	 * @return array [浏览器，版本]
+	 */
+	public static function resolve($ua){
+		return UAHelper::matches(self::$rules, $ua);
 	}
 }

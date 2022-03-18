@@ -6,31 +6,25 @@ use LFPhp\UA\ResolverInterface;
 use LFPhp\UA\UAHelper;
 
 /**
- * 浏览器
+ * 解析浏览器引擎
  */
 class BrowserEngine implements ResolverInterface {
-	const BROWSER_ENGINE_WEBKIT = 'BROWSER_ENGINE_WebKit';
-	const BROWSER_ENGINE_KHTML = 'BROWSER_ENGINE_KHTML';
-	const BROWSER_ENGINE_GECKO = 'BROWSER_ENGINE_GECKO';
-	const BROWSER_ENGINE_PRESTO = 'BROWSER_ENGINE_PRESTO';
-	const BROWSER_ENGINE_TRIDENT = 'BROWSER_ENGINE_TRIDENT';
+	private static $rules = [
+        ['/windows.+\sedge\/([\w\.]+)/i', 'Edge', '$1'], //EdgeHTML
+        [[
+            '/(presto)\/([\w\.]+)/i',
+			'/(webkit|trident|netfront|netsurf|amaya|lynx|w3m)\/([\w\.]+)/i',
+			'/(khtml|tasman|links)[\/\s]\(?([\w\.]+)/i',
+			'/(icab)[\/\s]([23]\.[\d\.]+)/i',
+        ], '$1', '$2'],
+		['/rv\:([\w\.]+).*(gecko)/i', '$2', '$1'],
+	];
 
-	public static function resolve($ua, &$version = ''){
-		if($version = UAHelper::matched(['/Browser\/AppleWebKit([0-9.]*)/i', '/WebKit\/([0-9.]*)/i'], $ua)){
-			return self::BROWSER_ENGINE_WEBKIT;
-		}
-		if($version = UAHelper::matched('/KHTML\/([0-9.]*)/', $ua)){
-			return self::BROWSER_ENGINE_KHTML;
-		}
-		if(UAHelper::matched('/Gecko/', $ua) && !UAHelper::matched('/like Gecko/i', $ua)){
-			$version = UAHelper::matched('/; rv:([^\)]+)\)/', $ua);
-			return self::BROWSER_ENGINE_GECKO;
-		}
-		if($version = UAHelper::matched('/Presto\/([0-9.]*)/', $ua)){
-			return self::BROWSER_ENGINE_PRESTO;
-		}
-		if($version = UAHelper::matched('/Trident\/([0-9.]*)/', $ua)){
-			return self::BROWSER_ENGINE_TRIDENT;
-		}
+	/**
+	 * @param $ua
+	 * @return array [core, version]
+	 */
+	public static function resolve($ua){
+		return UAHelper::matches(self::$rules, $ua);
 	}
 }
