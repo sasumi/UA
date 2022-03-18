@@ -13,7 +13,10 @@
 			"LFPhp\\UA\\": "./src/"
 		}
 	},
-	"require": {
-		"ext-json": "*"
+	"repositories": {
+		"packagist": {
+			"type": "composer",
+			"url": "https://mirrors.aliyun.com/composer/"
+		}
 	}
 }

@@ -7,5 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'LFPhp\\UA\\' => array($baseDir . '/src'),
-    'LFPhp\\Logger\\' => array($vendorDir . '/lfphp/logger/src'),
 );

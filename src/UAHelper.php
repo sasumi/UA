@@ -1,13 +1,14 @@
 <?php
 namespace LFPhp\UA;
 
-use LFPhp\Logger\Logger;
 use LFPhp\UA\Resolver\Browser;
 use LFPhp\UA\Resolver\BrowserEngine;
 use LFPhp\UA\Resolver\Device;
 use LFPhp\UA\Resolver\OS;
 
 class UAHelper {
+	public static $DEBUG_ON = false;
+
 	/**
 	 * UA按照规则匹配
 	 * @param array $rules 规则列表 [[patterns], $m1, $m2,...]
@@ -21,7 +22,7 @@ class UAHelper {
 			$regs = is_string($regs) ? [$regs] : $regs;
 			foreach($regs as $reg){
 				if(preg_match($reg, $ua, $ms)){
-					self::debug($reg, $ua, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2));
+					self::$DEBUG_ON && self::debug($reg, $ua, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2));
 					foreach($rule as $replacement){
 						if(strpos($replacement, '$') !== false){
 							$replacement = preg_replace_callback('/\$(\d+)/', function($match)use($ms){
@@ -83,11 +84,11 @@ class UAHelper {
 	private static function debug($pt, $str, array $debug_backtrace){
 		static $ua_flush_flag;
 		if(!$ua_flush_flag){
-			Logger::info('Start parser UA', $str);
+			echo 'Start parser UA', $str, PHP_EOL;
 			$ua_flush_flag = true;
 		}
 		array_pop($debug_backtrace);
 		$trace = array_pop($debug_backtrace);
-		Logger::info("Pattern: [$pt]\tFile: {$trace['file']} #{$trace['line']}");
+		echo "Pattern: [$pt]\tFile: {$trace['file']} #{$trace['line']}";
 	}
 }

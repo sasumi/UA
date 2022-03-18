@@ -4,7 +4,6 @@ namespace LFPhp\UA\Resolver;
 
 use LFPhp\UA\ResolverInterface;
 use LFPhp\UA\UAHelper;
-use function LFPhp\Func\dump;
 
 /**
  * 操作系统
@@ -77,7 +76,6 @@ class OS implements ResolverInterface {
 
 	public static function resolve($ua){
 		list($os, $ver) = UAHelper::matches(self::$rules, $ua);
-		dump($os, $ver);
 		return [$os, UAHelper::versionMap($ver, self::$windows_version_map)];
 	}
 }
