@@ -4,6 +4,7 @@ namespace LFPhp\UA;
 use LFPhp\UA\Resolver\Browser;
 use LFPhp\UA\Resolver\BrowserEngine;
 use LFPhp\UA\Resolver\Device;
+use LFPhp\UA\Resolver\NetType;
 use LFPhp\UA\Resolver\OS;
 
 class UAHelper {
@@ -21,7 +22,7 @@ class UAHelper {
 			$regs = array_shift($rule);
 			$regs = is_string($regs) ? [$regs] : $regs;
 			foreach($regs as $reg){
-				if(preg_match($reg, $ua, $ms)){
+				if(@preg_match($reg, $ua, $ms)){
 					self::$DEBUG_ON && self::debug($reg, $ua, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2));
 					foreach($rule as $replacement){
 						if(strpos($replacement, '$') !== false){
@@ -32,6 +33,9 @@ class UAHelper {
 						$ret[] = $replacement;
 					}
 					return $ret;
+				}
+				if($err = preg_last_error()){
+					throw new \Exception("Preg statement error:". $reg);
 				}
 			}
 		}
@@ -68,6 +72,7 @@ class UAHelper {
 		list($engine, $engine_version) = BrowserEngine::resolve($ua);
 		list($device, $vendor, $type) = Device::resolve($ua);
 		list($os, $os_version) = OS::resolve($ua);
+		list($net_type) = NetType::resolve($ua);
 		return [
 			'browser'         => $browser,
 			'browser_version' => $browser_version,
@@ -78,6 +83,7 @@ class UAHelper {
 			'type'            => $type,
 			'os'              => $os,
 			'os_version'      => $os_version,
+			'net_type'        => $net_type,
 		];
 	}
 

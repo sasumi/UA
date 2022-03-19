@@ -62,20 +62,26 @@ class OS implements ResolverInterface {
 		['/(ip[honead]+)(?:.*os\s([\w]+)*\slike\smac|;\sopera)/i', 'iOS', '$2'], //todo
 
 		[[
-			'(mac\sos\sx)\s?([\w\s\.]+\w)*/i',
-			'(macintosh|mac(?=_powerpc)\s)/i',
+			'/(mac\sos\sx)\s?([\w\s\.]+\w)*/i',
+			'/(macintosh|mac(?=_powerpc)\s)/i',
 		], 'MacOS', '$2'],
 
 		[[
-			'/((?:open)?solaris)[\/\s-]?([\w\.]+)*/i,',
-			'/(aix)\s((\d)(?=\.|\)|\s)[\w\.]*)*/i,',
-			'/(plan\s9|minix|beos|os\/2|amigaos|morphos|risc\sos|openvms)/i,',
+			'/((?:open)?solaris)[\/\s-]?([\w\.]+)*/i',
+			'/(aix)\s((\d)(?=\.|\)|\s)[\w\.]*)*/i',
+			'/(plan\s9|minix|beos|os\/2|amigaos|morphos|risc\sos|openvms)/i',
 			'/(unix)\s?([\w\.]+)*/i'
 		], '$1', '$2']
 	];
 
 	public static function resolve($ua){
 		list($os, $ver) = UAHelper::matches(self::$rules, $ua);
-		return [$os, UAHelper::versionMap($ver, self::$windows_version_map)];
+		if(strcasecmp($os, 'windows') === 0){
+			$ver = UAHelper::versionMap($ver, self::$windows_version_map);
+		}
+		if(strcasecmp($os,'iOS') === 0 || strcasecmp($os, 'MacOS') === 0){
+			$ver = str_replace('_', '.', $ver);
+		}
+		return [$os, $ver];
 	}
 }

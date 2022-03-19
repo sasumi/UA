@@ -9,12 +9,12 @@ use LFPhp\UA\UAHelper;
  * 设备类型
  */
 class Device implements ResolverInterface {
-	const TYPE_CONSOLE = 'console';
-	const TYPE_MOBILE = 'mobile';
-	const TYPE_TABLET = 'tablet';
-	const TYPE_SMART_TV = 'smart_tv';
-	const TYPE_WEARABLE = 'wearable';
-	const TYPE_EMBEDDED = 'embedded';
+	const TYPE_CONSOLE = 'Console';
+	const TYPE_MOBILE = 'Mobile';
+	const TYPE_TABLET = 'Tablet';
+	const TYPE_SMART_TV = 'SmartTv';
+	const TYPE_WEARABLE = 'Wearable';
+	const TYPE_EMBEDDED = 'Embedded';
 
 	private static $rules = [
 		//iPad/PlayBook
@@ -136,6 +136,7 @@ class Device implements ResolverInterface {
 	/**
 	 * @param $ua
 	 * @return array [产品型号，供应商，设备类型]
+	 * @throws \Exception
 	 */
 	public static function resolve($ua){
 		return UAHelper::matches(self::$rules, $ua);
