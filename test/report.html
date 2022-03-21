@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+	<script src="https://cdn.highcharts.com.cn/highcharts/highcharts.js"></script>
+	<script src="https://cdn.highcharts.com.cn/highcharts/modules/exporting.js"></script>
+	<script src="https://cdn.highcharts.com.cn/highcharts/modules/sunburst.js"></script>
+	<script src="https://cdn.highcharts.com.cn/highcharts/themes/dark-unica.js"></script>
+	<style>
+		html {background-color:#38383a;}
+		.block {height:600px; width:50%; float:left; box-}
+	</style>
+</head>
+<body>
+
+<div class="blocks">
+	<div id="h5-container" class="block"></div>
+	<div id="pc-container" class="block"></div>
+</div>
+<script>
+	Highcharts.setOptions({lang: {thousandsSep: ','}});
+	Highcharts.getOptions().colors.splice(0, 0, 'transparent'); // Splice in transparent for the center circle
+
+	fetch('./h5.result.json').then(rsp=>rsp.json()).then(h5_data=>{
+		let series = count_by_browser(h5_data);
+		console.log(series);
+
+		Highcharts.chart('h5-container', {
+			title: {
+				text: 'H5页面用户浏览器分析'
+			},
+			series: [{
+				type: "sunburst",
+				data: series,
+				allowDrillToNode: true,
+				cursor: 'pointer',
+				dataLabels: {
+					formatter: function () {
+						let shape = this.point.node.shapeArgs;
+						let innerArcFraction = (shape.end - shape.start) / (2 * Math.PI);
+						let perimeter = 2 * Math.PI * shape.innerR;
+						let innerArcPixels = innerArcFraction * perimeter;
+						if (innerArcPixels > 16) {
+							return this.point.name;
+						}
+					}
+				},
+				levels: [{
+					level: 2,
+					colorByPoint: true,
+					dataLabels: {
+						rotationMode: 'parallel'
+					}
+				},
+					{
+						level: 3,
+						colorVariation: {
+							key: 'brightness',
+							to: -0.5
+						}
+					}, {
+						level: 4,
+						colorVariation: {
+							key: 'brightness',
+							to: 0.5
+						}
+					}]
+			}],
+			tooltip: {
+				headerFormat: "",
+				pointFormat: '<b>{point.name}</b>访问数量：<b>{point.value}</b>'
+			}
+		});
+	});
+
+	fetch('./pc.result.json').then(rsp=>rsp.json()).then(h5_data=>{
+		let series = count_by_browser(h5_data);
+		console.log(series);
+
+		Highcharts.chart('pc-container', {
+			title: {
+				text: 'PC页面用户浏览器分析'
+			},
+			series: [{
+				type: "sunburst",
+				data: series,
+				allowDrillToNode: true,
+				cursor: 'pointer',
+				dataLabels: {
+					formatter: function () {
+						let shape = this.point.node.shapeArgs;
+						let innerArcFraction = (shape.end - shape.start) / (2 * Math.PI);
+						let perimeter = 2 * Math.PI * shape.innerR;
+						let innerArcPixels = innerArcFraction * perimeter;
+						if (innerArcPixels > 16) {
+							return this.point.name;
+						}
+					}
+				},
+				levels: [{
+					level: 2,
+					colorByPoint: true,
+					dataLabels: {
+						rotationMode: 'parallel'
+					}
+				},
+					{
+						level: 3,
+						colorVariation: {
+							key: 'brightness',
+							to: -0.5
+						}
+					}, {
+						level: 4,
+						colorVariation: {
+							key: 'brightness',
+							to: 0.5
+						}
+					}]
+			}],
+			tooltip: {
+				headerFormat: "",
+				pointFormat: '<b>{point.name}</b>访问数量：<b>{point.value}</b>'
+			}
+		});
+	});
+
+	let uuid_start = 0;
+	function uuid(){
+		return 'id_'+Math.random();
+	}
+
+	function count_by_browser(data_list){
+		let browser_counts = {};
+		data_list.forEach(item=>{
+			if(!browser_counts[item['browser']]){
+				browser_counts[item['browser']] = 0;
+			}
+			browser_counts[item['browser']] += parseInt(item['count']);
+		})
+		let series = [{'id': '0.0', 'parent': '', 'name': 'H5环境浏览器分布'}];
+
+		for(let browser in browser_counts){
+			let item_id = uuid();
+			series.push({
+				'id': item_id,
+				'parent': '0.0',
+				'name': browser,
+			});
+
+			//version
+			let vs_tmp = {};
+			data_list.forEach(item=>{
+				if(item['browser'] === browser){
+					if(!vs_tmp[item['browser_version']]){
+						vs_tmp[item['browser_version']] = 0;
+					}
+					vs_tmp[item['browser_version']] += parseInt(item['count']);
+				}
+			});
+
+			for(let version in vs_tmp){
+				series.push({
+					'id': uuid(),
+					'parent': item_id,
+					'name': version,
+					'value': vs_tmp[version],
+				});
+			}
+		}
+		return series;
+	}
+</script>
+</body>
+</html>

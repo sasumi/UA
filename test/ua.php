@@ -1,24 +1,50 @@
 <?php
 
 use LFPhp\UA\UAHelper;
+use function LFPhp\Func\dump;
 
 include __DIR__.'/../vendor/autoload.php';
-//$rst = UAHelper::resolveAll('Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.25 Safari/537.36 Core/1.70.3861.400 QQBrowser/10.7.4313.400,2');
-//var_dump($rst);
 
-$str = file_get_contents(__DIR__.'/1.json');
-$data = json_decode($str, true);
-$ret = [];
+//H5
+$str = file_get_contents(__DIR__.'/h5.csv');
+$str = str_replace("\r", "", $str);
+$vs_tmp = explode("\n", trim($str));
 
-foreach($data as $k=> $row){
-	$tmp = UAHelper::resolveAll($row['ua']);
-	echo $row['ua'], PHP_EOL;
-	var_dump($tmp);
-	echo "=================", PHP_EOL;
-	$tmp['ua'] = $row['ua'];
-	$tmp['count'] = $row['count'];
-	$ret[] = $tmp;
+$h5_ret = [];
+foreach($vs_tmp as $row){
+	if(preg_match('/^(.*?),(\d+)$/', $row, $matches)){
+		$ua = $matches[1];
+		$count = $matches[2];
+		$t = UAHelper::resolveAll($ua);
+		$t['ua'] = $ua;
+		$t['count'] = $count;
+		$h5_ret[] = $t;
+	} else {
+		dump($row);
+	}
 }
+echo 'Writing h5 result', PHP_EOL;
+file_put_contents(__DIR__.'/h5.result.json', json_encode($h5_ret, JSON_UNESCAPED_UNICODE));
 
-file_put_contents(__DIR__.'/2.ret.json', json_encode($data, JSON_UNESCAPED_UNICODE));
-echo 'done';
+//PC
+$str = file_get_contents(__DIR__.'/pc_server.json');
+$vs_tmp = explode("\n", $str);
+$pc_ret = [];
+foreach($vs_tmp as $row){
+	$obj = @json_decode($row, true) ?: [];
+	foreach($obj as $item){
+		if(!isset($obj['http_user_agent'])){
+			if(preg_match('/"(Mozilla[^"]+)"/', $obj['LogParseFailure'], $ms)){
+				$ua = $ms[1];
+				$obj['http_user_agent'] = $ua;
+			} else {
+				$obj['http_user_agent'] = '';
+			}
+		}
+		$tt = UAHelper::resolveAll($obj['http_user_agent']);
+		$tt['count'] = 1;
+		$pc_ret[] = $tt;
+	}
+}
+echo 'Writing pc result', PHP_EOL;
+file_put_contents(__DIR__.'/pc.result.json', json_encode($pc_ret, JSON_UNESCAPED_UNICODE));
