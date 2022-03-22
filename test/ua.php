@@ -29,7 +29,8 @@ file_put_contents(__DIR__.'/h5.result.json', json_encode($h5_ret, JSON_UNESCAPED
 //PC
 $str = file_get_contents(__DIR__.'/pc_server.json');
 $vs_tmp = explode("\n", $str);
-$pc_ret = [];
+$b_ret = [];
+$ua_maps = [];
 foreach($vs_tmp as $row){
 	$obj = @json_decode($row, true) ?: [];
 	foreach($obj as $item){
@@ -41,10 +42,45 @@ foreach($vs_tmp as $row){
 				$obj['http_user_agent'] = '';
 			}
 		}
-		$tt = UAHelper::resolveAll($obj['http_user_agent']);
-		$tt['count'] = 1;
-		$pc_ret[] = $tt;
+		$ua_maps[$obj['http_user_agent']] += 1;
 	}
 }
+foreach($ua_maps as $ua=>$count){
+	$item = UAHelper::resolveAll($ua);
+	$item['ua'] = $ua;
+	$item['count'] = $count;
+	$b_ret[] = $item;
+}
+
 echo 'Writing pc result', PHP_EOL;
-file_put_contents(__DIR__.'/pc.result.json', json_encode($pc_ret, JSON_UNESCAPED_UNICODE));
+file_put_contents(__DIR__.'/pc.result.json', json_encode($b_ret, JSON_UNESCAPED_UNICODE));
+
+
+//B-Admin
+$str = file_get_contents(__DIR__.'/b.json');
+$vs_tmp = explode("\n", $str);
+$b_ret = [];
+$ua_maps = [];
+foreach($vs_tmp as $row){
+	$obj = @json_decode($row, true) ?: [];
+	foreach($obj as $item){
+		if(!isset($obj['http_user_agent'])){
+			if(preg_match('/"(Mozilla[^"]+)"/', $obj['LogParseFailure'], $ms)){
+				$ua = $ms[1];
+				$obj['http_user_agent'] = $ua;
+			} else {
+				$obj['http_user_agent'] = '';
+			}
+		}
+		$ua_maps[$obj['http_user_agent']] += 1;
+	}
+}
+foreach($ua_maps as $ua=>$count){
+	$item = UAHelper::resolveAll($ua);
+	$item['ua'] = $ua;
+	$item['count'] = $count;
+	$b_ret[] = $item;
+}
+
+echo 'Writing B result', PHP_EOL;
+file_put_contents(__DIR__.'/admin.result.json', json_encode($b_ret, JSON_UNESCAPED_UNICODE));

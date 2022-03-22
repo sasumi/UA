@@ -1,0 +1,25 @@
+@charset "UTF-8";
+
+* {margin:0; padding:0; list-style:none; font-weight:normal}
+html {background-color:#38383a; color:#eee;}
+
+.blocks {padding:.5em 1em;}
+.blocks:after {content:""; display:block; clear:both;}
+.blocks h2 {font-size:20px; padding:0 0.5em; --block-height:600px; --chart-height:400px;}
+
+.block { height:var(--block-height);  width:50%; padding:10px; float:left;box-sizing:border-box;}
+.block .chart {height:var(--chart-height)}
+.block dl {padding: 1em;}
+.block dt {color:gray;padding-bottom: 0.25em;margin-bottom: 0.25em;border-bottom: 1px solid #666;}
+.block var {color:gray; margin-left:1em;}
+.block dd {height:calc(var(--block-height) - var(--chart-height) - 20px); overflow-y:auto;}
+.block dd>ul>li {padding:0.25em 0;}
+.block dd label {display:inline-block; min-width:10em;}
+.block dd label:before {content:""; display:inline-block; width:20px; height:20px;}
+.block dd span {display:inline-block; min-width:4em;}
+.block dd>ul>li:nth-child(even) {background-color: #00000021;}
+.block dd>ul>li.has-children>label:before{content:"+";}
+.block dd>ul>li.has-children>label {cursor:pointer;}
+.block dd>ul ul {display:none;color: #aaa;}
+.block dd .has-children.expand ul {display:block;}
+.block dd .has-children.expand>label:before {content:"-"}
