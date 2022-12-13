@@ -7,12 +7,12 @@
 			"name": "sasumi",
 			"email": "cnsasumi@gmail.com"
 		}
-	],
-	"autoload": {
-		"psr-4": {
-			"LFPhp\\UA\\": "./src/"
-		}
-	},
+		],
+		"autoload": {
+			"psr-4": {
+				"LFPhp\\UA\\": "./src/"
+			}
+		},
 	"repositories": {
 		"packagist": {
 			"type": "composer",

@@ -235,7 +235,7 @@ function count_by_browser(data_list){
 
 	browser_counts = sortMap(browser_counts, SORT_DESC);
 
-	let series = [{'id': '0.0', 'parent': '', 'name': 'H5环境浏览器分布'}];
+	let series = [{'id': '0.0', 'parent': '', 'name': ''}];
 
 	let vs_counts = {};
 	for(let browser in browser_counts){
